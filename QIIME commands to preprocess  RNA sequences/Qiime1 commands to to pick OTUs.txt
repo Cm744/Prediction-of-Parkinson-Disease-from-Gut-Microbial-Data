@@ -1,0 +1,34 @@
+###make a directory 348sam: mkdir 348sam
+
+###The mapping file (map.txt), parameters file of pick OTU (params.txt), all 348 fastq files should be put under this directory, and the following commands are run under this directory. 
+
+validate_mapping_file.py -m map.txt -o vmf-map/
+
+split_libraries_fastq.py –i type 348 samples’ file name here, use comma to separate them  --sample_id type 348 samples’ IDs here, use comma to separate them -o slout348/ -m map.txt -q 19 --barcode_type 'not-barcoded' --phred_offset=33
+
+pick_closed_reference_otus.py -o 348clotus/ -i slout348/seqs.fna -p params.txt
+
+filter_otus_by_sample.py -i 348clotus/sortmerna_picked_otus/seqs_otus.txt -f slout348/seqs.fna -s 10567.EC0004201,10567.EC0104201,10567.EP0127201,10567.EP0201201B,10567.FC0024201,10567.FC0333201,10567.FP0016201,10567.FP0016201A,10567.FP0071201,10567.FP0073201,10567.FP0193201,10567.FP0211201,10567.FP0225201,10567.FP0421201,10567.FP0438201,10567.GMWA.1034,10567.GMWA.1036,10567.GMWA.1038,10567.GMWA.1078,10567.GMWA.1090,10567.GMWA.2005 -o filtered_otus/
+
+make_otu_table.py -i filtered_otus/seqs_sfiltered_otus.txt -o 348clotus/otu_table_filter.biom
+
+
+filter_otus_from_otu_table.py -i 348clotus/otu_table_filter.biom -o 327otus/otn2.biom -n 2    ### delete those OTUs whose total reads are 1 and 2. This result includes 4710 OTUs 
+
+filter_otus_from_otu_table.py -i 327otus/otn2.biom -o 327otus/327no2nof.biom -e aligned327/rep_set1_failures.fasta  ### delete those OTUs whose total reads are 1 and 2, and delete OTUs that fail to be aligned after picking representative sequence.  This result includes 4706 OTUs.
+###rep_set1_failures.fasta is obtained from other three steps (see additional steps)
+
+
+###Additional steps to get rep_set1_failures.fasta:
+
+
+
+
+split_libraries_fastq.py –i type 327 samples’ file name here, use comma to separate them  --sample_id type 327 samples’ IDs here, use comma to separate them -o 327sl/ -m map.txt -q 19 --barcode_type 'not-barcoded' --phred_offset=33
+
+
+
+pick_rep_set.py -i filtered_otus/seqs_sfiltered_otus.txt -f 327sl/seqs.fna -o pickrepo327/rep_set.fna
+
+
+align_seqs.py -i pickrepo327/rep_set.fna -o aligned327 
